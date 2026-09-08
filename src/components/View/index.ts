@@ -1,4 +1,5 @@
 export { Card } from './Card';
+export { CardWithCategory } from './CardWithCategory';
 export { CardCatalog } from './CardCatalog';
 export { CardPreview } from './CardPreview';
 export { CardBasket } from './CardBasket';

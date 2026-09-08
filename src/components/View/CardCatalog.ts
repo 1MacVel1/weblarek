@@ -1,11 +1,10 @@
-import { Card } from './Card';
+import { CardWithCategory } from './CardWithCategory';
 import { ensureElement } from '../../utils/utils';
 import type { TCardCatalog } from '../../types';
 
 export class CardCatalog
-    extends Card<TCardCatalog> {
+    extends CardWithCategory<TCardCatalog> {
 
-    private readonly categoryElement: HTMLElement;
     private readonly imageElement: HTMLImageElement;
 
     constructor(
@@ -13,12 +12,6 @@ export class CardCatalog
         onClick: () => void
     ) {
         super(container);
-
-        this.categoryElement =
-            ensureElement<HTMLElement>(
-                '.card__category',
-                container
-            );
 
         this.imageElement =
             ensureElement<HTMLImageElement>(
@@ -29,13 +22,6 @@ export class CardCatalog
         this.container.addEventListener(
             'click',
             onClick
-        );
-    }
-
-    set category(value: string) {
-        this.setCategory(
-            this.categoryElement,
-            value
         );
     }
 

@@ -173,7 +173,7 @@ function renderProductPreview(
                 ? 'Недоступно'
                 : isInBasket
                     ? 'Удалить из корзины'
-                    : 'В корзину',
+                    : 'Купить',
 
         buttonDisabled: product.price === null,
     });
@@ -191,7 +191,9 @@ function renderBasket(): void {
             const card = new CardBasket(
                 cardElement,
                 () => {
-                    basket.removeItem(product);
+                    events.emit('basket:remove', {
+                        id: product.id,
+                    });
                 }
             );
 
@@ -270,13 +272,9 @@ events.on('catalog:changed', () => {
         const card = new CardCatalog(
             cardElement,
             () => {
-                productCatalog.setPreview(product);
-
-                modal.render({
-                    content: cardPreview.render(),
+                events.emit('card:select', {
+                    id: product.id,
                 });
-
-                modal.open();
             }
         );
 
@@ -337,6 +335,30 @@ events.on('buyer:changed', () => {
 // ========================================
 
 // ----------------------------------------
+// Пользователь выбрал товар
+// ----------------------------------------
+
+events.on<{ id: string }>(
+    'card:select',
+    ({ id }) => {
+        const product =
+            productCatalog.getProductById(id);
+
+        if (!product) {
+            return;
+        }
+
+        productCatalog.setPreview(product);
+
+        modal.render({
+            content: cardPreview.render(),
+        });
+
+        modal.open();
+    }
+);
+
+// ----------------------------------------
 // Купить / удалить товар
 // ----------------------------------------
 
@@ -373,6 +395,26 @@ events.on('basket:open', () => {
     modal.open();
 });
 
+
+// ----------------------------------------
+// Удалить товар из корзины
+// ----------------------------------------
+
+events.on<{ id: string }>(
+    'basket:remove',
+    ({ id }) => {
+        const product =
+            basket
+                .getItems()
+                .find((item) => item.id === id);
+
+        if (!product) {
+            return;
+        }
+
+        basket.removeItem(product);
+    }
+);
 
 // ----------------------------------------
 // Начать оформление заказа

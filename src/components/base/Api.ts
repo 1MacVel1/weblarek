@@ -1,4 +1,4 @@
-import type { ApiPostMethods } from '../../types';
+type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
 export class Api {
     readonly baseUrl: string;
@@ -14,10 +14,19 @@ export class Api {
         };
     }
 
-    protected handleResponse<T>(response: Response): Promise<T> {
-        if (response.ok) return response.json();
-        else return response.json()
-            .then(data => Promise.reject(data.error ?? response.statusText));
+    protected handleResponse<T>(
+        response: Response
+    ): Promise<T> {
+        if (response.ok) {
+            return response.json();
+        } else {
+            return response.json()
+                .then((data) =>
+                    Promise.reject(
+                        data.error ?? response.statusText
+                    )
+                );
+        }
     }
 
     get<T extends object>(uri: string) {
@@ -27,7 +36,11 @@ export class Api {
         }).then(this.handleResponse<T>);
     }
 
-    post<T extends object>(uri: string, data: object, method: ApiPostMethods = 'POST') {
+    post<T extends object>(
+        uri: string,
+        data: object,
+        method: ApiPostMethods = 'POST'
+    ) {
         return fetch(this.baseUrl + uri, {
             ...this.options,
             method,

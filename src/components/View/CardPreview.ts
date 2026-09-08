@@ -1,12 +1,11 @@
-import { Card } from './Card';
+import { CardWithCategory } from './CardWithCategory';
 import type { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
 import type { TCardPreview } from '../../types';
 
 export class CardPreview
-    extends Card<TCardPreview> {
+    extends CardWithCategory<TCardPreview> {
 
-    private readonly categoryElement: HTMLElement;
     private readonly imageElement: HTMLImageElement;
     private readonly descriptionElement: HTMLElement;
     private readonly buttonElement: HTMLButtonElement;
@@ -16,12 +15,6 @@ export class CardPreview
         private readonly events: IEvents
     ) {
         super(container);
-
-        this.categoryElement =
-            ensureElement<HTMLElement>(
-                '.card__category',
-                container
-            );
 
         this.imageElement =
             ensureElement<HTMLImageElement>(
@@ -46,13 +39,6 @@ export class CardPreview
             () => {
                 this.events.emit('card:action');
             }
-        );
-    }
-
-    set category(value: string) {
-        this.setCategory(
-            this.categoryElement,
-            value
         );
     }
 
