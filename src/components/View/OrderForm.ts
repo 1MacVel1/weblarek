@@ -1,7 +1,7 @@
 import type { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
 import type { TPayment } from '../../types';
-import type { IOrderFormView } from '../../types/view';
+import type { IOrderFormView } from '../../types'
 import { Form } from './Form';
 
 export class OrderForm extends Form<IOrderFormView> {

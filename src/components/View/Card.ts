@@ -7,7 +7,7 @@ import type {
     TCardBasket,
     TCardCatalog,
     TCardPreview,
-} from '../../types/view';
+} from '../../types'
 
 export abstract class Card<T extends TCardBase> extends Component<T> {
     protected readonly titleElement: HTMLElement;

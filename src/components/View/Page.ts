@@ -1,7 +1,7 @@
 import { Component } from '../base/Component';
 import type { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
-import type { IPageView } from '../../types/view';
+import type { IPageView } from '../../types'
 
 export class Page extends Component<IPageView> {
     private readonly basketButton: HTMLButtonElement;

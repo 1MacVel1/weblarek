@@ -1,7 +1,7 @@
 import { Component } from '../base/Component';
 import type { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
-import type { ISuccessView } from '../../types/view';
+import type { ISuccessView } from '../../types'
 
 export class Success extends Component<ISuccessView> {
     private readonly descriptionElement: HTMLElement;

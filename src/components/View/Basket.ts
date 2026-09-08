@@ -1,7 +1,7 @@
 import { Component } from '../base/Component';
 import type { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
-import type { IBasketView } from '../../types/view';
+import type { IBasketView } from '../../types'
 
 export class Basket extends Component<IBasketView> {
     private readonly listElement: HTMLElement;

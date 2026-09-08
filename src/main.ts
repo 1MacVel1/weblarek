@@ -181,9 +181,12 @@ function renderProductPreview(
         image: `${CDN_URL}${product.image}`,
         description: product.description,
 
-        buttonText: isInBasket
-            ? 'Удалить из корзины'
-            : 'В корзину',
+        buttonText:
+            product.price === null
+                ? 'Недоступно'
+                : isInBasket
+                    ? 'Удалить из корзины'
+                    : 'В корзину',
 
         buttonDisabled: product.price === null,
     });
@@ -395,11 +398,15 @@ events.on<{ id: string }>(
             return;
         }
 
+        currentModalScreen = null;
+
         if (basket.hasItem(id)) {
             basket.removeItem(product);
         } else {
             basket.addItem(product);
         }
+
+        modal.close();
     }
 );
 

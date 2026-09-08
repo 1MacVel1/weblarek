@@ -56,18 +56,28 @@ Presenter - презентер содержит основную логику п
 ### Базовый код
 
 #### Класс Component
-Является базовым классом для всех компонентов интерфейса.
-Класс является дженериком и принимает в переменной `T` тип данных, которые могут быть переданы в метод `render` для отображения.
 
-Конструктор:  
-`constructor(container: HTMLElement)` - принимает ссылку на DOM элемент за отображение, которого он отвечает.
+Абстрактный базовый класс для компонентов слоя Представления. Предоставляет наследникам общий набор методов для работы с DOM и реализацию метода `render`.
 
-Поля класса:  
-`container: HTMLElement` - поле для хранения корневого DOM элемента компонента.
+Класс является дженериком `Component<T>`, где `T` описывает данные, которые компонент может получить для отображения.
 
-Методы класса:  
-`render(data?: Partial<T>): HTMLElement` - Главный метод класса. Он принимает данные, которые необходимо отобразить в интерфейсе, записывает эти данные в поля класса и возвращает ссылку на DOM-элемент. Предполагается, что в классах, которые будут наследоваться от `Component` будут реализованы сеттеры для полей с данными, которые будут вызываться в момент вызова `render` и записывать данные в необходимые DOM элементы.  
-`setImage(element: HTMLImageElement, src: string, alt?: string): void` - утилитарный метод для модификации DOM-элементов `<img>`
+Конструктор:
+
+`constructor(container: HTMLElement)` — принимает корневой DOM-элемент компонента и сохраняет его в поле `container`.
+
+Поля класса:
+
+- `container: HTMLElement` — корневой DOM-элемент, за отображение которого отвечает компонент.
+
+Методы класса:
+
+- `toggleClass(element: HTMLElement, className: string, force?: boolean): void` — добавляет или удаляет CSS-класс у переданного элемента;
+- `setText(element: HTMLElement, value: unknown): void` — устанавливает текстовое содержимое DOM-элемента;
+- `setDisabled(element: HTMLButtonElement | HTMLInputElement, state: boolean): void` — управляет состоянием `disabled` кнопки или поля ввода;
+- `setHidden(element: HTMLElement): void` — скрывает элемент;
+- `setVisible(element: HTMLElement): void` — возвращает элементу видимость;
+- `setImage(element: HTMLImageElement, src: string, alt?: string): void` — устанавливает адрес изображения и при необходимости альтернативный текст;
+- `render(data?: Partial<T>): HTMLElement` — передаёт данные компоненту через его сеттеры и возвращает корневой DOM-элемент компонента.
 
 
 #### Класс Api
@@ -160,74 +170,139 @@ interface IBuyer {
 - `phone: string` — номер телефона покупателя;
 - `address: string` — адрес доставки.
 
+### Типы слоя Представления
+
+Для компонентов слоя Представления используются производные типы и интерфейсы, объявленные в `src/types/index.ts`.
+
+`TCardBase` содержит общие данные карточки:
+
+- `id: string`;
+- `title: string`;
+- `price: number | null`.
+
+`TCardCatalog` расширяет `TCardBase` данными:
+
+- `category: string`;
+- `image: string`.
+
+`TCardPreview` расширяет данные карточки каталога:
+
+- `description: string`;
+- `buttonText: string`;
+- `buttonDisabled: boolean`.
+
+`TCardBasket` расширяет базовые данные карточки:
+
+- `index: number`.
+
+`IGalleryView` содержит:
+
+- `items: HTMLElement[]` — готовые DOM-элементы карточек каталога.
+
+`IBasketView` содержит:
+
+- `items: HTMLElement[]` — карточки товаров в корзине;
+- `total: number` — общая стоимость;
+- `valid: boolean` — доступность оформления заказа.
+
+`IPageView` содержит:
+
+- `counter: number` — количество товаров в корзине.
+
+`IModalView` содержит:
+
+- `content: HTMLElement` — содержимое модального окна.
+
+`IFormView` содержит:
+
+- `valid: boolean` — валидность формы;
+- `errors: string` — текст ошибок.
+
+`IOrderFormView` расширяет `IFormView` полями:
+
+- `payment: TPayment`;
+- `address: string`.
+
+`IContactsFormView` расширяет `IFormView` полями:
+
+- `email: string`;
+- `phone: string`.
+
+`ISuccessView` содержит:
+
+- `total: number` — сумма успешно оформленного заказа.
+
 ## Модели данных
 
-Для хранения и обработки данных приложения используются три модели: каталог товаров, корзина и покупатель. Каждая модель отвечает только за свою область данных.
+Для хранения и изменения данных приложения используются три модели: каталог товаров, корзина и данные покупателя. Каждая модель получает в конструкторе объект, реализующий интерфейс `IEvents`, и генерирует событие после изменения своего состояния.
 
 ### Класс ProductCatalog
 
-Класс `ProductCatalog` отвечает за хранение товаров, полученных с сервера, и товара, выбранного пользователем для подробного просмотра.
+Класс `ProductCatalog` отвечает за хранение каталога товаров и товара, выбранного пользователем для подробного просмотра.
 
 Конструктор:
 
-`constructor()` — не принимает параметров. При создании экземпляра модели список товаров является пустым, выбранный товар отсутствует.
+`constructor(events: IEvents)` — принимает брокер событий, через который модель сообщает об изменениях данных.
 
 Поля класса:
 
-- `products: IProduct[]` — массив всех товаров каталога;
-- `preview: IProduct | null` — товар, выбранный пользователем для подробного просмотра.
+- `products: IProduct[]` — массив товаров каталога;
+- `preview: IProduct | null` — выбранный для подробного просмотра товар;
+- `events: IEvents` — брокер событий приложения.
 
 Методы класса:
 
-- `setProducts(products: IProduct[]): void` — сохраняет в модели массив товаров, переданный в параметре `products`;
-- `getProducts(): IProduct[]` — возвращает массив всех товаров, сохранённых в модели;
-- `getProductById(id: string): IProduct | undefined` — принимает идентификатор товара и возвращает соответствующий ему товар. Если товар с таким идентификатором отсутствует, возвращает `undefined`;
-- `setPreview(product: IProduct): void` — сохраняет переданный товар как выбранный для подробного просмотра;
-- `getPreview(): IProduct | null` — возвращает товар, выбранный для подробного просмотра. Если товар не выбран, возвращает `null`.
+- `setProducts(products: IProduct[]): void` — сохраняет массив товаров и генерирует событие `catalog:changed`;
+- `getProducts(): IProduct[]` — возвращает сохранённый массив товаров;
+- `getProductById(id: string): IProduct | undefined` — возвращает товар по идентификатору;
+- `setPreview(product: IProduct): void` — сохраняет выбранный товар и генерирует событие `preview:changed`;
+- `getPreview(): IProduct | null` — возвращает выбранный товар или `null`, если товар не выбран.
 
 ### Класс Basket
 
-Класс `Basket` отвечает за хранение и обработку товаров, которые пользователь выбрал для покупки.
+Класс `Basket` отвечает за хранение и обработку товаров, добавленных покупателем в корзину.
 
 Конструктор:
 
-`constructor()` — не принимает параметров. При создании экземпляра модели корзина является пустой.
+`constructor(events: IEvents)` — принимает брокер событий приложения.
 
 Поля класса:
 
-- `items: IProduct[]` — массив товаров, добавленных пользователем в корзину.
+- `items: IProduct[]` — массив товаров корзины;
+- `events: IEvents` — брокер событий приложения.
 
 Методы класса:
 
-- `getItems(): IProduct[]` — возвращает массив товаров, находящихся в корзине;
-- `addItem(product: IProduct): void` — принимает товар и добавляет его в корзину;
-- `removeItem(product: IProduct): void` — принимает товар и удаляет его из корзины;
-- `clear(): void` — удаляет из корзины все товары;
-- `getTotal(): number` — возвращает общую стоимость товаров, находящихся в корзине;
-- `getCount(): number` — возвращает количество товаров в корзине;
-- `hasItem(id: string): boolean` — принимает идентификатор товара и возвращает `true`, если товар с таким идентификатором находится в корзине, и `false` — если отсутствует.
+- `getItems(): IProduct[]` — возвращает товары корзины;
+- `addItem(product: IProduct): void` — добавляет товар и генерирует событие `basket:changed`;
+- `removeItem(product: IProduct): void` — удаляет товар и генерирует событие `basket:changed`;
+- `clear(): void` — очищает корзину и генерирует событие `basket:changed`;
+- `getTotal(): number` — рассчитывает общую стоимость товаров;
+- `getCount(): number` — возвращает количество товаров;
+- `hasItem(id: string): boolean` — проверяет наличие товара в корзине по идентификатору.
 
 ### Класс Buyer
 
-Класс `Buyer` отвечает за хранение, получение, очистку и проверку данных покупателя, необходимых для оформления заказа.
+Класс `Buyer` отвечает за хранение, изменение, получение, валидацию и очистку данных покупателя.
 
 Конструктор:
 
-`constructor()` — не принимает параметров. При создании экземпляра модели все данные покупателя имеют пустые значения.
+`constructor(events: IEvents)` — принимает брокер событий приложения.
 
 Поля класса:
 
 - `payment: TPayment` — выбранный способ оплаты;
 - `address: string` — адрес доставки;
-- `email: string` — электронная почта покупателя;
-- `phone: string` — номер телефона покупателя.
+- `email: string` — электронная почта;
+- `phone: string` — телефон;
+- `events: IEvents` — брокер событий приложения.
 
 Методы класса:
 
-- `setData(data: Partial<IBuyer>): void` — сохраняет переданные данные покупателя. Метод позволяет изменить одно или несколько полей, не удаляя уже сохранённые значения остальных полей;
-- `getData(): IBuyer` — возвращает все сохранённые данные покупателя;
-- `clear(): void` — очищает все данные покупателя;
-- `validate(): Partial<Record<keyof IBuyer, string>>` — проверяет заполненность данных покупателя и возвращает объект с текстами ошибок. Если поле заполнено корректно, соответствующее ему свойство в объекте ошибок отсутствует.
+- `setData(data: Partial<IBuyer>): void` — обновляет одно или несколько полей покупателя и генерирует событие `buyer:changed`;
+- `getData(): IBuyer` — возвращает сохранённые данные покупателя;
+- `clear(): void` — очищает данные покупателя и генерирует событие `buyer:changed`;
+- `validate(): Partial<Record<keyof IBuyer, string>>` — проверяет заполненность данных и возвращает объект ошибок.
 
 ## Слой коммуникации
 
@@ -279,6 +354,23 @@ interface IBuyer {
 
 Содержит общую логику для всех вариантов отображения товара.
 
+Конструктор:
+
+`constructor(container: HTMLElement, events: IEvents)` — принимает корневой DOM-элемент карточки и брокер событий.
+
+Поля класса:
+
+- `titleElement: HTMLElement` — элемент названия;
+- `priceElement: HTMLElement` — элемент цены;
+- `events: IEvents` — брокер событий.
+
+Сеттеры и методы:
+
+- `id: string` — записывает идентификатор товара в `dataset`;
+- `title: string` — отображает название;
+- `price: number | null` — отображает цену;
+- `applyCategory(element: HTMLElement, value: string): void` — устанавливает текст и CSS-модификатор категории.
+
 От него наследуются:
 
 - `CardCatalog` — карточка товара в каталоге;
@@ -300,6 +392,22 @@ interface IBuyer {
 
 При нажатии на карточку генерирует событие выбора товара. Презентер использует это событие для открытия подробной информации о товаре.
 
+Конструктор:
+
+`constructor(container: HTMLElement, events: IEvents)`.
+
+Поля:
+
+- `categoryElement: HTMLElement`;
+- `imageElement: HTMLImageElement`.
+
+Сеттеры:
+
+- `category: string`;
+- `image: string`.
+
+При клике по карточке генерирует событие `card:select`.
+
 ---
 
 ### CardPreview
@@ -314,6 +422,27 @@ interface IBuyer {
 При нажатии на кнопку генерирует соответствующее событие.
 
 Если у товара отсутствует цена, кнопка покупки должна быть заблокирована.
+
+Конструктор:
+
+`constructor(container: HTMLElement, events: IEvents)`.
+
+Поля:
+
+- `categoryElement: HTMLElement`;
+- `imageElement: HTMLImageElement`;
+- `descriptionElement: HTMLElement`;
+- `buttonElement: HTMLButtonElement`.
+
+Сеттеры:
+
+- `category: string`;
+- `image: string`;
+- `description: string`;
+- `buttonText: string`;
+- `buttonDisabled: boolean`.
+
+При нажатии на кнопку генерирует событие `card:toggle`.
 
 ---
 
@@ -330,6 +459,21 @@ interface IBuyer {
 
 При нажатии на кнопку удаления генерирует событие удаления товара из корзины.
 
+Конструктор:
+
+`constructor(container: HTMLElement, events: IEvents)`.
+
+Поля:
+
+- `indexElement: HTMLElement`;
+- `deleteButton: HTMLButtonElement`.
+
+Сеттер:
+
+- `index: number`.
+
+При нажатии на кнопку удаления генерирует событие `basket:remove`.
+
 ---
 
 ### Gallery
@@ -339,6 +483,14 @@ interface IBuyer {
 Отвечает за отображение списка карточек товаров на главной странице.
 
 Получает массив DOM-элементов карточек и выводит их в контейнер каталога.
+
+Конструктор:
+
+`constructor(container: HTMLElement)` — принимает DOM-элемент каталога.
+
+Сеттер:
+
+- `items: HTMLElement[]` — заменяет содержимое каталога переданными карточками.
 
 ---
 
@@ -355,6 +507,25 @@ interface IBuyer {
 
 При нажатии на кнопку оформления заказа генерирует событие начала оформления заказа.
 
+Конструктор:
+
+`constructor(container: HTMLElement, events: IEvents)`.
+
+Поля:
+
+- `listElement: HTMLElement`;
+- `totalElement: HTMLElement`;
+- `orderButton: HTMLButtonElement`;
+- `events: IEvents`.
+
+Сеттеры:
+
+- `items: HTMLElement[]` — отображает товары или сообщение «Корзина пуста»;
+- `total: number` — отображает итоговую стоимость;
+- `valid: boolean` — управляет доступностью кнопки оформления.
+
+При нажатии кнопки оформления генерирует событие `order:open`.
+
 ---
 
 ### Page
@@ -368,6 +539,22 @@ interface IBuyer {
 - блокировку прокрутки страницы при открытом модальном окне.
 
 При нажатии на иконку корзины генерирует событие открытия корзины.
+
+Конструктор:
+
+`constructor(container: HTMLElement, events: IEvents)`.
+
+Поля:
+
+- `basketButton: HTMLButtonElement`;
+- `counterElement: HTMLElement`;
+- `events: IEvents`.
+
+Сеттер:
+
+- `counter: number` — отображает количество товаров в корзине.
+
+При нажатии на иконку корзины генерирует событие `basket:open`.
 
 ---
 
@@ -387,6 +574,26 @@ interface IBuyer {
 
 - по нажатию на кнопку закрытия;
 - по нажатию на область вне содержимого модального окна.
+  Конструктор:
+
+`constructor(container: HTMLElement, events: IEvents)`.
+
+Поля:
+
+- `closeButton: HTMLButtonElement`;
+- `contentElement: HTMLElement`;
+- `events: IEvents`.
+
+Сеттер:
+
+- `content: HTMLElement` — устанавливает содержимое модального окна.
+
+Методы:
+
+- `open(): void` — добавляет класс `modal_active`;
+- `close(): void` — удаляет класс `modal_active`.
+
+При нажатии на крестик или фон генерирует событие `modal:close`.
 
 ---
 
@@ -408,6 +615,24 @@ interface IBuyer {
 
 При изменении значений полей формы генерируются события, которые обрабатываются Презентером.
 
+Конструктор:
+
+`constructor(form: HTMLFormElement, events: IEvents)`.
+
+Поля:
+
+- `form: HTMLFormElement`;
+- `submitButton: HTMLButtonElement`;
+- `errorsElement: HTMLElement`;
+- `events: IEvents`.
+
+Сеттеры:
+
+- `valid: boolean` — управляет доступностью кнопки отправки;
+- `errors: string` — отображает ошибки формы.
+
+При изменении поля генерирует событие вида `<form>.<field>:change`, а при отправке — `<form>:submit`.
+
 ---
 
 ### OrderForm
@@ -425,6 +650,23 @@ interface IBuyer {
 
 После успешной отправки формы генерирует событие перехода к следующему этапу оформления заказа.
 
+Конструктор:
+
+`constructor(container: HTMLFormElement, events: IEvents)`.
+
+Поля:
+
+- `addressInput: HTMLInputElement`;
+- `cardButton: HTMLButtonElement`;
+- `cashButton: HTMLButtonElement`.
+
+Сеттеры:
+
+- `payment: TPayment` — отображает выбранный способ оплаты;
+- `address: string` — устанавливает адрес.
+
+При выборе способа оплаты генерирует событие `order.payment:change`.
+
 ---
 
 ### ContactsForm
@@ -440,6 +682,20 @@ interface IBuyer {
 
 После отправки формы генерирует событие оформления заказа.
 
+Конструктор:
+
+`constructor(container: HTMLFormElement, events: IEvents)`.
+
+Поля:
+
+- `emailInput: HTMLInputElement`;
+- `phoneInput: HTMLInputElement`.
+
+Сеттеры:
+
+- `email: string`;
+- `phone: string`.
+
 ---
 
 ### Success
@@ -449,6 +705,22 @@ interface IBuyer {
 Отображает информацию об успешной покупке и сумму списанных средств.
 
 При нажатии на кнопку закрытия генерирует событие завершения оформления заказа.
+
+Конструктор:
+
+`constructor(container: HTMLElement, events: IEvents)`.
+
+Поля:
+
+- `descriptionElement: HTMLElement`;
+- `closeButton: HTMLButtonElement`;
+- `events: IEvents`.
+
+Сеттер:
+
+- `total: number` — отображает сумму списания.
+
+При нажатии кнопки закрытия генерирует событие `success:close`.
 
 ## События приложения
 

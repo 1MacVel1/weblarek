@@ -1,7 +1,7 @@
 import { Component } from '../base/Component';
 import type { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
-import type { IFormView } from '../../types/view';
+import type { IFormView } from '../../types'
 
 export abstract class Form<T extends IFormView>
     extends Component<T> {
