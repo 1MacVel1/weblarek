@@ -1,6 +1,6 @@
 import type { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
-import type { IContactsFormView } from '../../types'
+import type { IContactsFormView } from '../../types';
 import { Form } from './Form';
 
 export class ContactsForm
