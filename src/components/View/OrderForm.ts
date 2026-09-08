@@ -1,7 +1,9 @@
 import type { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
-import type { TPayment } from '../../types';
-import type { IOrderFormView } from '../../types'
+import type {
+    IOrderFormView,
+    TPayment,
+} from '../../types';
 import { Form } from './Form';
 
 export class OrderForm extends Form<IOrderFormView> {
@@ -49,14 +51,12 @@ export class OrderForm extends Form<IOrderFormView> {
     }
 
     set payment(value: TPayment) {
-        this.toggleClass(
-            this.cardButton,
+        this.cardButton.classList.toggle(
             'button_alt-active',
             value === 'card'
         );
 
-        this.toggleClass(
-            this.cashButton,
+        this.cashButton.classList.toggle(
             'button_alt-active',
             value === 'cash'
         );

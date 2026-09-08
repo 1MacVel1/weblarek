@@ -1,7 +1,7 @@
 import { Component } from '../base/Component';
 import type { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
-import type { ISuccessView } from '../../types'
+import type { ISuccessView } from '../../types';
 
 export class Success extends Component<ISuccessView> {
     private readonly descriptionElement: HTMLElement;
@@ -31,9 +31,7 @@ export class Success extends Component<ISuccessView> {
     }
 
     set total(value: number) {
-        this.setText(
-            this.descriptionElement,
-            `Списано ${value} синапсов`
-        );
+        this.descriptionElement.textContent =
+            `Списано ${value} синапсов`;
     }
 }

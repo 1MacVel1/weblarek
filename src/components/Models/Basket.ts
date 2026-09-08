@@ -13,9 +13,7 @@ export class Basket {
     addItem(product: IProduct): void {
         this.items.push(product);
 
-        this.events.emit('basket:changed', {
-            items: this.items,
-        });
+        this.events.emit('basket:changed');
     }
 
     removeItem(product: IProduct): void {
@@ -23,17 +21,13 @@ export class Basket {
             (item) => item.id !== product.id
         );
 
-        this.events.emit('basket:changed', {
-            items: this.items,
-        });
+        this.events.emit('basket:changed');
     }
 
     clear(): void {
         this.items = [];
 
-        this.events.emit('basket:changed', {
-            items: this.items,
-        });
+        this.events.emit('basket:changed');
     }
 
     getTotal(): number {

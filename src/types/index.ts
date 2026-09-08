@@ -46,7 +46,7 @@ export interface IOrderResult {
 
 export type TCardBase = Pick<
     IProduct,
-    'id' | 'title' | 'price'
+    'title' | 'price'
 >;
 
 export type TCardCatalog =

@@ -1,7 +1,7 @@
 import { Component } from '../base/Component';
 import type { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
-import type { IPageView } from '../../types'
+import type { IPageView } from '../../types';
 
 export class Page extends Component<IPageView> {
     private readonly basketButton: HTMLButtonElement;
@@ -31,9 +31,7 @@ export class Page extends Component<IPageView> {
     }
 
     set counter(value: number) {
-        this.setText(
-            this.counterElement,
-            value
-        );
+        this.counterElement.textContent =
+            String(value);
     }
 }

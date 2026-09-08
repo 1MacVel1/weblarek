@@ -56,11 +56,11 @@ const buyer = new Buyer(events);
 
 
 // ========================================
-// DOM-элементы страницы
+// DOM-элементы
 // ========================================
 
-const pageContainer =
-    ensureElement<HTMLElement>('.page');
+const headerContainer =
+    ensureElement<HTMLElement>('.header');
 
 const galleryContainer =
     ensureElement<HTMLElement>('.gallery');
@@ -74,7 +74,7 @@ const modalContainer =
 // ========================================
 
 const page = new Page(
-    pageContainer,
+    headerContainer,
     events
 );
 
@@ -84,6 +84,17 @@ const gallery = new Gallery(
 
 const modal = new Modal(
     modalContainer,
+    events
+);
+
+
+// Карточка подробного просмотра
+
+const cardPreviewElement =
+    cloneTemplate<HTMLElement>('#card-preview');
+
+const cardPreview = new CardPreview(
+    cardPreviewElement,
     events
 );
 
@@ -121,7 +132,7 @@ const contactsForm = new ContactsForm(
 );
 
 
-// Окно успешного заказа
+// Экран успешного заказа
 
 const successElement =
     cloneTemplate<HTMLElement>('#success');
@@ -130,21 +141,6 @@ const success = new Success(
     successElement,
     events
 );
-
-
-// ========================================
-// Состояние текущего модального окна
-// ========================================
-
-type TModalScreen =
-    | 'preview'
-    | 'basket'
-    | 'order'
-    | 'contacts'
-    | 'success'
-    | null;
-
-let currentModalScreen: TModalScreen = null;
 
 
 // ========================================
@@ -163,18 +159,9 @@ function getFormErrors(
 function renderProductPreview(
     product: IProduct
 ): void {
-    const cardElement =
-        cloneTemplate<HTMLElement>('#card-preview');
-
-    const card = new CardPreview(
-        cardElement,
-        events
-    );
-
     const isInBasket = basket.hasItem(product.id);
 
-    const cardNode = card.render({
-        id: product.id,
+    cardPreview.render({
         title: product.title,
         price: product.price,
         category: product.category,
@@ -190,12 +177,6 @@ function renderProductPreview(
 
         buttonDisabled: product.price === null,
     });
-
-    modal.render({
-        content: cardNode,
-    });
-
-    modal.open();
 }
 
 
@@ -209,11 +190,14 @@ function renderBasket(): void {
 
             const card = new CardBasket(
                 cardElement,
-                events
+                () => {
+                    events.emit('basket:remove', {
+                        id: product.id,
+                    });
+                }
             );
 
             return card.render({
-                id: product.id,
                 title: product.title,
                 price: product.price,
                 index: index + 1,
@@ -287,11 +271,14 @@ events.on('catalog:changed', () => {
 
         const card = new CardCatalog(
             cardElement,
-            events
+            () => {
+                events.emit('card:select', {
+                    id: product.id,
+                });
+            }
         );
 
         return card.render({
-            id: product.id,
             title: product.title,
             price: product.price,
             category: product.category,
@@ -316,8 +303,6 @@ events.on('preview:changed', () => {
         return;
     }
 
-    currentModalScreen = 'preview';
-
     renderProductPreview(product);
 });
 
@@ -331,17 +316,7 @@ events.on('basket:changed', () => {
         counter: basket.getCount(),
     });
 
-    if (currentModalScreen === 'basket') {
-        renderBasket();
-    }
-
-    if (currentModalScreen === 'preview') {
-        const product = productCatalog.getPreview();
-
-        if (product) {
-            renderProductPreview(product);
-        }
-    }
+    renderBasket();
 });
 
 
@@ -350,18 +325,13 @@ events.on('basket:changed', () => {
 // ----------------------------------------
 
 events.on('buyer:changed', () => {
-    if (currentModalScreen === 'order') {
-        renderOrderForm();
-    }
-
-    if (currentModalScreen === 'contacts') {
-        renderContactsForm();
-    }
+    renderOrderForm();
+    renderContactsForm();
 });
 
 
 // ========================================
-// СОБЫТИЯ ПРЕДСТАВЛЕНИЯ
+// СОБЫТИЯ ПРЕДСТАВЛЕНИЙ
 // ========================================
 
 
@@ -369,17 +339,23 @@ events.on('buyer:changed', () => {
 // Пользователь выбрал товар
 // ----------------------------------------
 
-events.on<{ id: string }>(
-    'card:select',
-    ({ id }) => {
+events.on(
+    'card:action',
+    () => {
         const product =
-            productCatalog.getProductById(id);
+            productCatalog.getPreview();
 
-        if (!product) {
+        if (!product || product.price === null) {
             return;
         }
 
-        productCatalog.setPreview(product);
+        if (basket.hasItem(product.id)) {
+            basket.removeItem(product);
+        } else {
+            basket.addItem(product);
+        }
+
+        modal.close();
     }
 );
 
@@ -398,8 +374,6 @@ events.on<{ id: string }>(
             return;
         }
 
-        currentModalScreen = null;
-
         if (basket.hasItem(id)) {
             basket.removeItem(product);
         } else {
@@ -416,10 +390,6 @@ events.on<{ id: string }>(
 // ----------------------------------------
 
 events.on('basket:open', () => {
-    currentModalScreen = 'basket';
-
-    renderBasket();
-
     modal.render({
         content: basketView.render(),
     });
@@ -454,10 +424,6 @@ events.on<{ id: string }>(
 // ----------------------------------------
 
 events.on('order:open', () => {
-    currentModalScreen = 'order';
-
-    renderOrderForm();
-
     modal.render({
         content: orderForm.render(),
     });
@@ -505,10 +471,6 @@ events.on<{
 // ----------------------------------------
 
 events.on('order:submit', () => {
-    currentModalScreen = 'contacts';
-
-    renderContactsForm();
-
     modal.render({
         content: contactsForm.render(),
     });
@@ -572,8 +534,6 @@ events.on('contacts:submit', () => {
             basket.clear();
             buyer.clear();
 
-            currentModalScreen = 'success';
-
             modal.render({
                 content: success.render({
                     total: result.total,
@@ -596,8 +556,6 @@ events.on('contacts:submit', () => {
 // ----------------------------------------
 
 events.on('modal:close', () => {
-    currentModalScreen = null;
-
     modal.close();
 });
 
@@ -607,19 +565,21 @@ events.on('modal:close', () => {
 // ----------------------------------------
 
 events.on('success:close', () => {
-    currentModalScreen = null;
-
     modal.close();
 });
 
 
 // ========================================
-// ПЕРВОНАЧАЛЬНАЯ ЗАГРУЗКА
+// ПЕРВОНАЧАЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
 // ========================================
 
-page.render({
-    counter: basket.getCount(),
-});
+basket.clear();
+buyer.clear();
+
+
+// ========================================
+// ЗАГРУЗКА ТОВАРОВ
+// ========================================
 
 webLarekApi
     .getProducts()

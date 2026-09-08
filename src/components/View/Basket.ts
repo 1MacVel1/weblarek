@@ -1,7 +1,7 @@
 import { Component } from '../base/Component';
 import type { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
-import type { IBasketView } from '../../types'
+import type { IBasketView } from '../../types';
 
 export class Basket extends Component<IBasketView> {
     private readonly listElement: HTMLElement;
@@ -38,30 +38,15 @@ export class Basket extends Component<IBasketView> {
     }
 
     set items(value: HTMLElement[]) {
-        if (value.length > 0) {
-            this.listElement.replaceChildren(...value);
-            return;
-        }
-
-        const emptyElement = document.createElement('li');
-
-        emptyElement.className = 'basket__empty';
-        emptyElement.textContent = 'Корзина пуста';
-
-        this.listElement.replaceChildren(emptyElement);
+        this.listElement.replaceChildren(...value);
     }
 
     set total(value: number) {
-        this.setText(
-            this.totalElement,
-            `${value} синапсов`
-        );
+        this.totalElement.textContent =
+            `${value} синапсов`;
     }
 
     set valid(value: boolean) {
-        this.setDisabled(
-            this.orderButton,
-            !value
-        );
+        this.orderButton.disabled = !value;
     }
 }

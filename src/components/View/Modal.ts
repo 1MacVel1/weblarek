@@ -1,7 +1,7 @@
 import { Component } from '../base/Component';
 import type { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
-import type { IModalView } from '../../types'
+import type { IModalView } from '../../types';
 
 export class Modal extends Component<IModalView> {
     private readonly closeButton: HTMLButtonElement;
@@ -44,18 +44,10 @@ export class Modal extends Component<IModalView> {
     }
 
     open(): void {
-        this.toggleClass(
-            this.container,
-            'modal_active',
-            true
-        );
+        this.container.classList.add('modal_active');
     }
 
     close(): void {
-        this.toggleClass(
-            this.container,
-            'modal_active',
-            false
-        );
+        this.container.classList.remove('modal_active');
     }
 }

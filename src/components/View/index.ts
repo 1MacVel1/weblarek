@@ -1,9 +1,7 @@
-export {
-    Card,
-    CardCatalog,
-    CardPreview,
-    CardBasket,
-} from './Card';
+export { Card } from './Card';
+export { CardCatalog } from './CardCatalog';
+export { CardPreview } from './CardPreview';
+export { CardBasket } from './CardBasket';
 
 export { Gallery } from './Gallery';
 export { Basket } from './Basket';
