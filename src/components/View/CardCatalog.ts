@@ -1,6 +1,5 @@
 import { Card } from './Card';
 import { ensureElement } from '../../utils/utils';
-import { categoryMap } from '../../utils/constants';
 import type { TCardCatalog } from '../../types';
 
 export class CardCatalog
@@ -34,26 +33,10 @@ export class CardCatalog
     }
 
     set category(value: string) {
-        Object.values(categoryMap).forEach(
-            (className) => {
-                this.categoryElement.classList.remove(
-                    className
-                );
-            }
+        this.setCategory(
+            this.categoryElement,
+            value
         );
-
-        const categoryClass =
-            categoryMap[
-                value as keyof typeof categoryMap
-                ];
-
-        if (categoryClass) {
-            this.categoryElement.classList.add(
-                categoryClass
-            );
-        }
-
-        this.categoryElement.textContent = value;
     }
 
     set image(value: string) {

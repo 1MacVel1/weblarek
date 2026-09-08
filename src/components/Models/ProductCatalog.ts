@@ -10,9 +10,7 @@ export class ProductCatalog {
     setProducts(products: IProduct[]): void {
         this.products = products;
 
-        this.events.emit('catalog:changed', {
-            products: this.products,
-        });
+        this.events.emit('catalog:changed');
     }
 
     getProducts(): IProduct[] {
@@ -20,15 +18,15 @@ export class ProductCatalog {
     }
 
     getProductById(id: string): IProduct | undefined {
-        return this.products.find((product) => product.id === id);
+        return this.products.find(
+            (product) => product.id === id
+        );
     }
 
     setPreview(product: IProduct): void {
         this.preview = product;
 
-        this.events.emit('preview:changed', {
-            product: this.preview,
-        });
+        this.events.emit('preview:changed');
     }
 
     getPreview(): IProduct | null {

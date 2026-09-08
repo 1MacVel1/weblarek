@@ -1,7 +1,6 @@
 import { Card } from './Card';
 import type { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
-import { categoryMap } from '../../utils/constants';
 import type { TCardPreview } from '../../types';
 
 export class CardPreview
@@ -51,26 +50,10 @@ export class CardPreview
     }
 
     set category(value: string) {
-        Object.values(categoryMap).forEach(
-            (className) => {
-                this.categoryElement.classList.remove(
-                    className
-                );
-            }
+        this.setCategory(
+            this.categoryElement,
+            value
         );
-
-        const categoryClass =
-            categoryMap[
-                value as keyof typeof categoryMap
-                ];
-
-        if (categoryClass) {
-            this.categoryElement.classList.add(
-                categoryClass
-            );
-        }
-
-        this.categoryElement.textContent = value;
     }
 
     set image(value: string) {
@@ -81,8 +64,7 @@ export class CardPreview
     }
 
     set description(value: string) {
-        this.descriptionElement.textContent =
-            value;
+        this.descriptionElement.textContent = value;
     }
 
     set buttonText(value: string) {

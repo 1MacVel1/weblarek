@@ -1,5 +1,6 @@
 import { Component } from '../base/Component';
 import { ensureElement } from '../../utils/utils';
+import { categoryMap } from '../../utils/constants';
 import type { TCardBase } from '../../types';
 
 export abstract class Card<T extends TCardBase>
@@ -33,5 +34,27 @@ export abstract class Card<T extends TCardBase>
             value === null
                 ? 'Бесценно'
                 : `${value} синапсов`;
+    }
+
+    protected setCategory(
+        element: HTMLElement,
+        value: string
+    ): void {
+        Object.values(categoryMap).forEach(
+            (className) => {
+                element.classList.remove(className);
+            }
+        );
+
+        const categoryClass =
+            categoryMap[
+                value as keyof typeof categoryMap
+                ];
+
+        if (categoryClass) {
+            element.classList.add(categoryClass);
+        }
+
+        element.textContent = value;
     }
 }

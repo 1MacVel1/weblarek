@@ -191,9 +191,7 @@ function renderBasket(): void {
             const card = new CardBasket(
                 cardElement,
                 () => {
-                    events.emit('basket:remove', {
-                        id: product.id,
-                    });
+                    basket.removeItem(product);
                 }
             );
 
@@ -272,9 +270,13 @@ events.on('catalog:changed', () => {
         const card = new CardCatalog(
             cardElement,
             () => {
-                events.emit('card:select', {
-                    id: product.id,
+                productCatalog.setPreview(product);
+
+                modal.render({
+                    content: cardPreview.render(),
                 });
+
+                modal.open();
             }
         );
 
@@ -334,9 +336,8 @@ events.on('buyer:changed', () => {
 // СОБЫТИЯ ПРЕДСТАВЛЕНИЙ
 // ========================================
 
-
 // ----------------------------------------
-// Пользователь выбрал товар
+// Купить / удалить товар
 // ----------------------------------------
 
 events.on(
@@ -361,31 +362,6 @@ events.on(
 
 
 // ----------------------------------------
-// Купить / удалить товар
-// ----------------------------------------
-
-events.on<{ id: string }>(
-    'card:toggle',
-    ({ id }) => {
-        const product =
-            productCatalog.getProductById(id);
-
-        if (!product || product.price === null) {
-            return;
-        }
-
-        if (basket.hasItem(id)) {
-            basket.removeItem(product);
-        } else {
-            basket.addItem(product);
-        }
-
-        modal.close();
-    }
-);
-
-
-// ----------------------------------------
 // Открыть корзину
 // ----------------------------------------
 
@@ -396,27 +372,6 @@ events.on('basket:open', () => {
 
     modal.open();
 });
-
-
-// ----------------------------------------
-// Удалить товар из корзины
-// ----------------------------------------
-
-events.on<{ id: string }>(
-    'basket:remove',
-    ({ id }) => {
-        const product =
-            basket
-                .getItems()
-                .find((item) => item.id === id);
-
-        if (!product) {
-            return;
-        }
-
-        basket.removeItem(product);
-    }
-);
 
 
 // ----------------------------------------

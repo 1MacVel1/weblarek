@@ -26,9 +26,7 @@ export class Buyer {
             this.phone = data.phone;
         }
 
-        this.events.emit('buyer:changed', {
-            buyer: this.getData(),
-        });
+        this.events.emit('buyer:changed');
     }
 
     getData(): IBuyer {
@@ -46,13 +44,13 @@ export class Buyer {
         this.email = '';
         this.phone = '';
 
-        this.events.emit('buyer:changed', {
-            buyer: this.getData(),
-        });
+        this.events.emit('buyer:changed');
     }
 
     validate(): Partial<Record<keyof IBuyer, string>> {
-        const errors: Partial<Record<keyof IBuyer, string>> = {};
+        const errors: Partial<
+            Record<keyof IBuyer, string>
+        > = {};
 
         if (!this.payment) {
             errors.payment = 'Не выбран вид оплаты';
